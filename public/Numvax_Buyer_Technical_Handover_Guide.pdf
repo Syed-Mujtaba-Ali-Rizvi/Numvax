@@ -1,0 +1,468 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 5893
+>>
+stream
+0.5670000000000001 w
+0 G
+0.09 g
+42.5196850393700814 785.1970866141731449 510.2362204724410049 -68.031496062992133 re
+f
+BT
+/F2 16 Tf
+18.3999999999999986 TL
+1. g
+59.5275590551181182 754.0159842519684616 Td
+(Numvax.com — Technical Specification & Buyer Guide) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+1. g
+59.5275590551181182 734.1734645669291695 Td
+(Complete Platform Documentation & Buyer Handover Report) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.09 g
+42.5196850393700814 694.4884251968503577 Td
+(1. Executive Summary & Platform Overview) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 677.480551181102328 Td
+(• Domain: https://numvax.com) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 661.8899999999999864 Td
+(• Niche: Free Online Utility Tools, PDF Suite, Batch Image Processors, QR Generators, Calculators.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 646.2994488188976447 Td
+(• Total Ecosystem: 184 Static Pages covering 71+ interactive web applications.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 630.7088976377951894 Td
+(• Monetization: Built-in Google AdSense slots \(Header, In-Content, Below Results, Sidebar\).) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 615.1183464566928478 Td
+(• Key Advantage: Zero Server File Overhead \($0/mo file storage cost\). 100% of image compression, PDF editing, and QR generation runs locally in the user's web browser RAM.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.09 g
+42.5196850393700814 588.1892125984251152 Td
+(2. Full Technology Stack) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 571.1813385826771992 Td
+(• Frontend Framework: Next.js 16.3.0 \(App Router Architecture with React 19\).) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 555.5907874015747439 Td
+(• Programming Language: 100% TypeScript 5.x with strict type safety across all components.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 540.0002362204724022 Td
+(• Styling & Design Tokens: TailwindCSS v4 with Vanilla CSS design tokens.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 524.4096850393700606 Td
+(• Rendering Strategy: SSG \(Static Site Generation\) pre-rendering all 184 pages for <0.5s load speeds.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 508.8191338582676622 Td
+(• Icons & UI Primitives: Lucide React icon set \(lucide-react\).) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 493.2285826771653205 Td
+(• ORM & Database: Prisma ORM \(prisma/schema.prisma\) supporting PostgreSQL, Supabase, Neon, or MySQL.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 477.6380314960629221 Td
+(• Analytics & Admin Storage: Prisma models for daily usage statistics and contact inquiries.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 462.0474803149605805 Td
+(• Infrastructure & Hosting: Deployed on Vercel Edge CDN with automated SSL/TLS certificates.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.09 g
+42.5196850393700814 435.1183464566928478 Td
+(3. Storage & Privacy-First Architecture \($0 Cloud Bill\)) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 418.1104724409448181 Td
+(• Server File Storage: 0 Bytes Required. Photos and PDFs never touch server disk storage.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 402.5199212598424765 Td
+(• Client-Side Execution: Image compression, PDF manipulation, and QR generation run inside browser RAM.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 386.929370078740078 Td
+(• Zero Server Hosting Bills: No AWS S3 bucket fees or server CPU bandwidth costs as traffic grows.) Tj
+ET
+BT
+/F1 9.5 Tf
+10.9249999999999989 TL
+0.235 g
+48.1889763779527627 371.3388188976377364 Td
+(• Automated GDPR / CCPA Compliance: Zero file storage eliminates data leakage risk entirely.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.09 g
+42.5196850393700814 344.4096850393700038 Td
+(4. Key Questions & Answers for Buyers) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.09 g
+48.1889763779527627 327.4018110236220309 Td
+(Q1: What are the monthly running costs for host & database?) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.275 g
+53.8582677165354369 313.2285826771652637 Td
+(Answer: Near $0 / Month. Hosted on Vercel starter tier. Browser execution keeps server load near zero.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.09 g
+48.1889763779527627 290.5514173228345953 Td
+(Q2: How hard is it to add a new tool or calculator?) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.275 g
+53.8582677165354369 276.3781889763778281 Td
+(Answer: Very easy. Adding a tool entry to src/lib/toolCatalog.ts auto-generates its SSG page, sitemap entry, breadcrumbs,) Tj
+T* (and JSON-LD schema.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.09 g
+48.1889763779527627 253.7010236220471597 Td
+(Q3: Is the code well-structured and typed?) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.275 g
+53.8582677165354369 239.5277952755905062 Td
+(Answer: Yes, 100% TypeScript with modern Next.js 16 App Router conventions.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.09 g
+48.1889763779527627 216.8506299212597241 Td
+(Q4: Is the site ready for Google AdSense monetization?) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.275 g
+53.8582677165354369 202.6774015748030706 Td
+(Answer: Yes. AdSense slots are pre-configured in AdSlot.tsx. Simply swap in your publisher ID.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.09 g
+48.1889763779527627 180.0002362204724022 Td
+(Q5: What assets are included in the sale?) Tj
+ET
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.275 g
+53.8582677165354369 165.827007874015635 Td
+(Answer: Domain name \(numvax.com\), source code repo, Vercel project, IndexNow key, and brand logo.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R ]
+/Count 1
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+6 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 5 0 R
+/F2 6 0 R
+/F3 7 0 R
+/F4 8 0 R
+/F5 9 0 R
+/F6 10 0 R
+/F7 11 0 R
+/F8 12 0 R
+/F9 13 0 R
+/F10 14 0 R
+/F11 15 0 R
+/F12 16 0 R
+/F13 17 0 R
+/F14 18 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+19 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260813133346+05'00')
+>>
+endobj
+20 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000006097 00000 n 
+0000007914 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000006154 00000 n 
+0000006279 00000 n 
+0000006409 00000 n 
+0000006542 00000 n 
+0000006679 00000 n 
+0000006802 00000 n 
+0000006931 00000 n 
+0000007063 00000 n 
+0000007199 00000 n 
+0000007327 00000 n 
+0000007454 00000 n 
+0000007583 00000 n 
+0000007716 00000 n 
+0000007818 00000 n 
+0000008162 00000 n 
+0000008248 00000 n 
+trailer
+<<
+/Size 21
+/Root 20 0 R
+/Info 19 0 R
+/ID [ <09824521D469E4F9AA3CEA6081626751> <09824521D469E4F9AA3CEA6081626751> ]
+>>
+startxref
+8352
+%%EOF

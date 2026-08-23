@@ -1,0 +1,135 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  name             String
+  passwordHash     String
+  twoFactorEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ToolCategory {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tools       Tool[]
+}
+
+model Tool {
+  id               String        @id @default(uuid())
+  slug             String        @unique
+  name             String
+  categoryId       String
+  type             String        @default("calculator") // calculator, pdf, image, text, converter, developer, seo
+  description      String
+  shortDescription String
+  icon             String?
+  isPopular        Boolean       @default(false)
+  isFeatured       Boolean       @default(false)
+  isEnabled        Boolean       @default(true)
+  order            Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  category         ToolCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  content          ToolContent?
+  usage            ToolUsage[]
+  usageDaily       ToolUsageDaily[]
+}
+
+model ToolContent {
+  id                 String   @id @default(uuid())
+  toolId             String   @unique
+  h1Title            String
+  metaTitle          String
+  metaDescription    String
+  formulaExplanation String
+  workedExamplesJson String   // JSON string of examples array
+  faqItemsJson       String   // JSON string of FAQ items array
+  instructions       String
+  updatedAt          DateTime @updatedAt
+
+  tool               Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+}
+
+model ToolUsage {
+  id        String   @id @default(uuid())
+  toolId    String
+  timestamp DateTime @default(now())
+  isSuccess Boolean  @default(true)
+
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+}
+
+model ToolUsageDaily {
+  id        String   @id @default(uuid())
+  toolId    String
+  date      String   // YYYY-MM-DD
+  count     Int      @default(0)
+
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([toolId, date])
+}
+
+model SiteSettings {
+  id                   String   @id @default("default")
+  siteName             String   @default("Calcora")
+  tagline              String   @default("Fast, accurate and easy-to-use free online tools")
+  logoUrl              String?
+  contactEmail         String   @default("contact@calcora.com")
+  adsEnabled           Boolean  @default(true)
+  headerAdActive       Boolean  @default(true)
+  sidebarAdActive      Boolean  @default(true)
+  inContentAdActive    Boolean  @default(true)
+  belowResultsAdActive  Boolean  @default(true)
+  footerAdActive       Boolean  @default(true)
+  analyticsId          String?
+  updatedAt            DateTime @updatedAt
+}
+
+model SeoPage {
+  id              String   @id @default(uuid())
+  path            String   @unique
+  title           String
+  metaDescription String
+  canonicalUrl    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  noIndex         Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("NEW") // NEW, READ, REPLIED
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminEmail String
+  action     String
+  target     String
+  details    String?
+  timestamp  DateTime @default(now())
+}
