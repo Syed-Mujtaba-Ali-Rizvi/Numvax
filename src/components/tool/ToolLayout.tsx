@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb } from '../navigation/Breadcrumb';
 import { CalculatorFAQ, FAQItem } from '../calculator/CalculatorFAQ';
@@ -110,7 +110,6 @@ export const ToolLayout: React.FC<ToolLayoutProps> = async ({
 
       {/* Main Interactive Tool UI */}
       <main className="w-full mt-2 flex flex-col gap-4">
-        <AdSlot position="header" />
         {children}
       </main>
 

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb } from '../navigation/Breadcrumb';
 import { CalculatorFAQ, FAQItem } from './CalculatorFAQ';
@@ -99,7 +99,6 @@ export const CalculatorLayout: React.FC<CalculatorLayoutProps> = async ({
 
       {/* Main Interactive Calculator UI */}
       <main className="w-full mt-2 flex flex-col gap-4">
-        <AdSlot position="header" />
         {children}
       </main>
 

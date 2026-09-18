@@ -1,13 +1,14 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { ShieldCheck, Zap, Layers, Lock, Cpu, Globe } from 'lucide-react';
+import { ShieldCheck, Zap, Layers, Lock, Cpu, Globe, CheckCircle2, Award, Users } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'About Numvax – Free Online Tools & Utility Platform',
-  description: 'Learn about Numvax: a free, privacy-first online utility platform providing batch image compression, PDF editing, QR code generation, unit converters, and calculators.',
+  description: 'Learn about Numvax: a free, privacy-first online utility platform providing client-side batch image compression, PDF editing, QR code generation, unit converters, and calculators.',
   alternates: {
     canonical: 'https://numvax.com/about',
   },
@@ -26,13 +27,13 @@ export default function AboutPage() {
       <Breadcrumb items={breadcrumbs} />
 
       <div className="flex items-center gap-3">
-        <Image src="/logo.png" alt="Numvax Logo" width={40} height={40} className="rounded-xl object-contain bg-black shrink-0 shadow-2xs" priority />
+        <Image src="/logo.png" alt="Numvax Logo" width={48} height={48} className="rounded-xl object-contain bg-black shrink-0 shadow-2xs" priority />
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
             About Numvax
           </h1>
           <p className="text-xs sm:text-sm text-neutral-500 font-medium">
-            Fast, client-side online tools & utilities platform
+            Fast, client-side online tools &amp; utility platform built for high privacy and speed
           </p>
         </div>
       </div>
@@ -41,25 +42,67 @@ export default function AboutPage() {
 
         {/* Core Purpose */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">What is Numvax?</h2>
+          <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-neutral-800" />
+            What is Numvax?
+          </h2>
           <p className="leading-relaxed">
-            <strong>Numvax</strong> is a free online utility platform providing client-side browser tools for image processing, PDF manipulation, QR code generation, file conversion, financial & health calculators, and developer utilities.
+            <strong>Numvax</strong> (<Link href="/" className="text-neutral-900 font-semibold underline">https://numvax.com</Link>) is an independent online utility suite designed to make essential daily digital tasks fast, reliable, and 100% private. We provide specialized tools for image optimization, PDF document manipulation, QR code generation, financial &amp; health calculations, unit conversions, and developer utilities.
           </p>
           <p className="leading-relaxed">
-            Our mission is simple: build fast, accurate, zero-friction tools that run directly inside your web browser without account signups, registration walls, or server-side file uploads.
+            Unlike traditional online utility websites that upload your files to remote cloud servers for processing, Numvax is engineered with a <strong>modern client-side architecture</strong>. Our tools execute computations and file transformations directly within your browser memory using cutting-edge WebAssembly, HTML5 Canvas, and Web Crypto APIs.
           </p>
         </section>
 
-        {/* What Numvax Provides */}
+        {/* Our Guiding Principles */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold text-neutral-900">What Does Numvax Provide?</h2>
+          <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+            <Award className="w-5 h-5 text-neutral-800" />
+            Our Core Principles
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-2xl flex flex-col gap-2">
+              <span className="font-bold text-neutral-900 text-sm flex items-center gap-1.5">
+                <Lock className="w-4 h-4 text-emerald-700" /> 100% Privacy by Design
+              </span>
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Your files, inputs, passwords, and photos never leave your device. No server uploads, no data retention, and no data selling.
+              </p>
+            </div>
+
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-2xl flex flex-col gap-2">
+              <span className="font-bold text-neutral-900 text-sm flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-600" /> Zero Friction Access
+              </span>
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                No mandatory sign-ups, no email captures, and no paywalls. All tools are immediately accessible to everyone, everywhere.
+              </p>
+            </div>
+
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-2xl flex flex-col gap-2">
+              <span className="font-bold text-neutral-900 text-sm flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-blue-600" /> Algorithmic Accuracy
+              </span>
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Every calculation and conversion formula is benchmarked against recognized industry standards (WHO, NIST, ISO).
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Tool Categories */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-neutral-800" />
+            What Does Numvax Provide?
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl flex flex-col gap-1">
               <span className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                <Layers className="w-4 h-4 text-neutral-900" /> Image Tools & Batch Processing
+                <Layers className="w-4 h-4 text-neutral-900" /> Image Tools &amp; Batch Processing
               </span>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Compress up to 50 images at once (JPG, PNG, WebP), resize dimensions, convert image formats, and export batch ZIP archives.
+                Batch compress up to 50 images simultaneously (JPG, PNG, WebP), resize pixel dimensions, convert formats, and export clean ZIP archives.
               </p>
             </div>
 
@@ -68,56 +111,65 @@ export default function AboutPage() {
                 <ShieldCheck className="w-4 h-4 text-neutral-900" /> PDF Document Utilities
               </span>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Merge PDF files, split page ranges, compress PDF size, edit pages, extract images, sign contracts, and convert PDF to Word/JPG.
+                Merge PDF documents, split page ranges, compress PDF size, add digital signatures, password-protect files, and convert PDF to Word/JPG.
               </p>
             </div>
 
             <div className="p-4 bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl flex flex-col gap-1">
               <span className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                <Zap className="w-4 h-4 text-neutral-900" /> Bulk QR Code Generators
+                <Zap className="w-4 h-4 text-neutral-900" /> High-Performance QR Codes
               </span>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Generate single or batch QR codes up to 100 links at once with custom center logo branding, error correction, and ZIP export.
+                Generate single or bulk QR codes up to 100 links at once with custom center logos, scannability error correction, and instant SVG/PNG exports.
               </p>
             </div>
 
             <div className="p-4 bg-[#FAF8F5] border border-neutral-200/80 rounded-2xl flex flex-col gap-1">
               <span className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-neutral-900" /> Calculators & Converters
+                <Cpu className="w-4 h-4 text-neutral-900" /> Mathematical &amp; Financial Calculators
               </span>
               <p className="text-xs text-neutral-600 leading-relaxed">
-                Financial loan amortization, percentage calculators, BMI metrics, GPA scales, date duration math, and multi-unit converters.
+                Loan amortization schedules, percentage calculations, BMI health ranges, college GPA scales, business day counts, and unit converters.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Who is Numvax for */}
+        {/* Technology & Security */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">Who is Numvax Useful For?</h2>
-          <ul className="list-disc pl-5 space-y-1.5 text-neutral-600 text-xs sm:text-sm">
-            <li><strong>Students & Educators:</strong> Calculate GPA, calculate date differences, format essays, and count words.</li>
-            <li><strong>Freelancers & Small Business Owners:</strong> Generate bulk QR codes, edit contract PDFs, and compress batch photos.</li>
-            <li><strong>Developers & Marketers:</strong> Format JSON data, encode Base64 strings, generate passwords, and analyze meta tags.</li>
-            <li><strong>General Web Users:</strong> Fast, free daily utility tools that work on any smartphone, tablet, or desktop computer.</li>
+          <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+            <Cpu className="w-5 h-5 text-neutral-800" />
+            Engineering &amp; Security Architecture
+          </h2>
+          <p className="leading-relaxed text-xs sm:text-sm text-neutral-600">
+            Numvax is built with modern web technologies including Next.js, TypeScript, Tailwind CSS, PDF-Lib, and Tesseract.js OCR. By shifting computations into the user&apos;s browser runtime:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-xs text-neutral-600">
+            <li><strong>Zero Server Latency:</strong> Instant results without waiting for round-trip server uploads.</li>
+            <li><strong>Zero Data Breach Surface:</strong> Since we don&apos;t hold your files or inputs in databases, there is no server-side user data to leak or compromise.</li>
+            <li><strong>Offline Capable:</strong> Many tools continue to function smoothly even when your internet connection drops after the page is loaded.</li>
           </ul>
         </section>
 
-        {/* Privacy First Principles */}
+        {/* Editorial Standards & Accuracy */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
-            <Lock className="w-5 h-5 text-neutral-900" /> Privacy-First Browser Processing
+            <CheckCircle2 className="w-5 h-5 text-neutral-800" />
+            Editorial &amp; Quality Verification Standards
           </h2>
-          <p className="leading-relaxed">
-            The vast majority of tools on Numvax process your data entirely inside your browser memory using WebAssembly, Canvas API, and JavaScript engines. Your photos, PDF files, passwords, and numbers are never uploaded to our servers or stored in third-party databases.
+          <p className="leading-relaxed text-xs sm:text-sm text-neutral-600">
+            Every calculator and utility on Numvax is accompanied by thorough documentation, worked examples, mathematical formula descriptions, and frequently asked questions (FAQs). We regularly review calculation engines against authoritative reference materials to maintain the highest standard of accuracy.
           </p>
         </section>
 
-        {/* Contact */}
+        {/* Contact & Transparency */}
         <section className="pt-4 border-t border-neutral-200 flex flex-col gap-2">
-          <h2 className="text-lg font-bold text-neutral-900">Contact & Feedback</h2>
+          <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+            <Users className="w-5 h-5 text-neutral-800" />
+            Contact &amp; Feedback
+          </h2>
           <p className="text-xs sm:text-sm text-neutral-600">
-            Have a tool suggestion or bug report? Reach out directly via our <a href="/contact" className="text-neutral-900 font-bold underline hover:text-neutral-700">Contact page</a> or email <a href="mailto:numvax@gmail.com" className="text-neutral-900 font-bold underline hover:text-neutral-700">Numvax@gmail.com</a>.
+            We actively maintain and improve Numvax based on user feedback. Have a feature suggestion, tool request, or bug report? Reach out via our <Link href="/contact" className="text-neutral-900 font-bold underline hover:text-neutral-700">Contact page</Link> or email us directly at <a href="mailto:numvax@gmail.com" className="text-neutral-900 font-bold underline hover:text-neutral-700">numvax@gmail.com</a>.
           </p>
         </section>
 
