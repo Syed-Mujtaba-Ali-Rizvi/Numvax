@@ -164,6 +164,12 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             gtag('config', 'G-YHEGJX5E0K', { send_page_view: true });
           `}
         </Script>
+        {/* Zander AI Widget */}
+        <Script
+          src="https://cdn.zanderio.ai/widget/loader.js"
+          data-id="wdg_4u3PxN8sIOWGQPDElJzxoUPq"
+          strategy="lazyOnload"
+        />
       </head>
       <body className="min-h-full flex flex-col bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
         {/* Google Tag Manager (noscript) */}
