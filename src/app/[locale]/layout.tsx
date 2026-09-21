@@ -164,15 +164,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             gtag('config', 'G-YHEGJX5E0K', { send_page_view: true });
           `}
         </Script>
-        {/* Zander AI Widget */}
-        <Script id="zander-widget-config" strategy="beforeInteractive">
-          {`window.ZanderioWidgetConfig = { key: 'wdg_4u3PxN8sIOWGQPDElJzxoUPq' };`}
-        </Script>
-        <Script
-          src="https://cdn.zanderio.ai/widget/loader.js"
-          data-id="wdg_4u3PxN8sIOWGQPDElJzxoUPq"
-          strategy="afterInteractive"
-        />
       </head>
       <body className="min-h-full flex flex-col bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
         {/* Google Tag Manager (noscript) */}
@@ -191,6 +182,17 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           <main className="flex-1 w-full">{children}</main>
           <Footer />
           <ConsentBanner />
+          {/* Zander AI Widget */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.ZanderioWidgetConfig = { key: 'wdg_4u3PxN8sIOWGQPDElJzxoUPq' };`,
+            }}
+          />
+          <script
+            src="https://cdn.zanderio.ai/widget/loader.js"
+            data-id="wdg_4u3PxN8sIOWGQPDElJzxoUPq"
+            defer
+          />
         </NextIntlClientProvider>
       </body>
     </html>
