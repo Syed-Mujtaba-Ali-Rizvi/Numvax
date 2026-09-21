@@ -165,10 +165,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           `}
         </Script>
         {/* Zander AI Widget */}
+        <Script id="zander-widget-config" strategy="beforeInteractive">
+          {`window.ZanderioWidgetConfig = { key: 'wdg_4u3PxN8sIOWGQPDElJzxoUPq' };`}
+        </Script>
         <Script
           src="https://cdn.zanderio.ai/widget/loader.js"
           data-id="wdg_4u3PxN8sIOWGQPDElJzxoUPq"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
         />
       </head>
       <body className="min-h-full flex flex-col bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
