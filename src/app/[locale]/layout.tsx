@@ -182,17 +182,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           <main className="flex-1 w-full">{children}</main>
           <Footer />
           <ConsentBanner />
-          {/* Zander AI Widget */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.ZanderioWidgetConfig = { key: 'wdg_4u3PxN8sIOWGQPDElJzxoUPq' };`,
-            }}
-          />
-          <script
-            src="https://cdn.zanderio.ai/widget/loader.js"
-            data-id="wdg_4u3PxN8sIOWGQPDElJzxoUPq"
-            defer
-          />
         </NextIntlClientProvider>
       </body>
     </html>
