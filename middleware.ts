@@ -10,7 +10,7 @@ export const config = {
     '/',
     // Match all locale-prefixed paths
     '/(es|fr|de|it)/:path*',
-    // Match all other paths (excluding _next, api, static files)
-    '/((?!_next|api|.*\\..*).+)',
+    // Match all other paths (excluding _next, api, admin, static files)
+    '/((?!_next|api|admin|.*\\..*).+)',
   ],
 };
