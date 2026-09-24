@@ -2,17 +2,37 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
+import { getPageContent } from '@/lib/contentService';
 import { ShieldCheck, Lock, Eye, FileText, Database, Globe } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy - Numvax',
-  description: 'Numvax comprehensive privacy policy, Google AdSense disclosures, cookie usage, Google Consent Mode v2, and GDPR/CCPA data protection rights.',
-  alternates: {
-    canonical: 'https://numvax.com/privacy-policy',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageContent('privacy-policy');
+  const title = page?.metaTitle || 'Privacy Policy - Numvax';
+  const description = page?.metaDescription || 'Numvax comprehensive privacy policy, Google AdSense disclosures, cookie usage, Google Consent Mode v2, and GDPR/CCPA data protection rights.';
 
-export default function PrivacyPage() {
+  return {
+    title,
+    description,
+    robots: {
+      index: !page?.noIndex,
+      follow: !page?.noFollow,
+    },
+    alternates: {
+      canonical: page?.canonicalUrl || 'https://numvax.com/privacy-policy',
+    },
+    openGraph: {
+      title,
+      description,
+      url: page?.canonicalUrl || 'https://numvax.com/privacy-policy',
+      siteName: 'Numvax',
+    },
+  };
+}
+
+export default async function PrivacyPage() {
+  const page = await getPageContent('privacy-policy');
+  const h1Title = page?.h1Title || 'Privacy Policy';
+
   const breadcrumbs = [
     { name: 'Home', url: 'https://numvax.com' },
     { name: 'Privacy Policy', url: 'https://numvax.com/privacy-policy' },
@@ -24,7 +44,7 @@ export default function PrivacyPage() {
 
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
-          Privacy Policy
+          {h1Title}
         </h1>
         <p className="text-sm text-neutral-500 font-medium">
           Last Updated: August 2026 | Effective Date: August 2026
@@ -37,7 +57,7 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-700" />
-            1. Overview & Privacy-First Architecture
+            1. Overview &amp; Privacy-First Architecture
           </h2>
           <p>
             At <strong>Numvax</strong> (accessible at <Link href="/" className="text-neutral-900 font-semibold underline hover:text-neutral-700">https://numvax.com</Link>), we believe that privacy is a fundamental human right. This Privacy Policy explains our practices regarding the collection, use, disclosure, and protection of information when you access our website, calculators, converters, image utilities, PDF tools, and developer utilities.
@@ -56,7 +76,7 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <Eye className="w-5 h-5 text-neutral-800" />
-            2. Google AdSense & Third-Party Advertising Disclosures
+            2. Google AdSense &amp; Third-Party Advertising Disclosures
           </h2>
           <p>
             Numvax is funded through advertising revenue to keep all online tools and calculators 100% free and accessible without subscription fees or paywalls. We partner with <strong>Google AdSense</strong> and affiliated third-party advertising networks to display relevant advertisements.
@@ -84,7 +104,7 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <Database className="w-5 h-5 text-neutral-800" />
-            3. Google Consent Mode v2 & Cookie Policy
+            3. Google Consent Mode v2 &amp; Cookie Policy
           </h2>
           <p>
             To strictly respect global privacy regulations including the European General Data Protection Regulation (GDPR) and the EU User Consent Policy, Numvax implements <strong>Google Consent Mode v2</strong>.
@@ -125,7 +145,7 @@ export default function PrivacyPage() {
 
         {/* Section 5: Local Storage & Device Data */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">5. Browser Local Storage & Device Data</h2>
+          <h2 className="text-xl font-bold text-neutral-900">5. Browser Local Storage &amp; Device Data</h2>
           <p>
             Numvax utilizes standard web browser <code>localStorage</code> solely to improve your user experience on your device. We use local storage for:
           </p>
@@ -176,7 +196,7 @@ export default function PrivacyPage() {
             If you are a California resident, the California Consumer Privacy Act (CCPA) as amended by the California Privacy Rights Act (CPRA) provides you with specific privacy rights:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-neutral-700">
-            <li><strong>Right to Know & Access:</strong> The right to request disclosure of categories and specific pieces of personal information collected.</li>
+            <li><strong>Right to Know &amp; Access:</strong> The right to request disclosure of categories and specific pieces of personal information collected.</li>
             <li><strong>Right to Delete:</strong> The right to request deletion of personal information collected from you.</li>
             <li><strong>Right to Opt-Out of Sale or Sharing:</strong> Numvax does not sell personal data for monetary compensation. To opt out of third-party cookie sharing for cross-context behavioral advertising, you can adjust your cookie settings via our on-site banner or use Global Privacy Control (GPC) browser signals.</li>
             <li><strong>Non-Discrimination:</strong> We will not discriminate against you for exercising any of your CCPA/CPRA rights.</li>
@@ -193,7 +213,7 @@ export default function PrivacyPage() {
 
         {/* Section 10: External Links */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">10. Third-Party Links & External Content</h2>
+          <h2 className="text-xl font-bold text-neutral-900">10. Third-Party Links &amp; External Content</h2>
           <p>
             Our website may contain links to third-party websites or services that are not owned or operated by Numvax. We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
           </p>
@@ -211,7 +231,7 @@ export default function PrivacyPage() {
         <section className="pt-4 border-t border-neutral-200 flex flex-col gap-2">
           <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
             <FileText className="w-5 h-5 text-neutral-800" />
-            12. Contact & Data Protection Officer Inquiries
+            12. Contact &amp; Data Protection Officer Inquiries
           </h2>
           <p className="text-xs sm:text-sm text-neutral-600">
             If you have any questions, concerns, or requests regarding this Privacy Policy or wish to exercise your data protection rights, please contact our privacy team:

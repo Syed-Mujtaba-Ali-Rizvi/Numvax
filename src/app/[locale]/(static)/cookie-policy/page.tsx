@@ -2,17 +2,37 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
+import { getPageContent } from '@/lib/contentService';
 import { Cookie, ShieldCheck, Settings, ExternalLink, Info, CheckCircle2 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Cookie Policy - Numvax',
-  description: 'Numvax comprehensive cookie policy, Google AdSense disclosures, Google Consent Mode v2, and cookie preference management.',
-  alternates: {
-    canonical: 'https://numvax.com/cookie-policy',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageContent('cookie-policy');
+  const title = page?.metaTitle || 'Cookie Policy - Numvax';
+  const description = page?.metaDescription || 'Numvax comprehensive cookie policy, Google AdSense disclosures, Google Consent Mode v2, and cookie preference management.';
 
-export default function CookiePolicyPage() {
+  return {
+    title,
+    description,
+    robots: {
+      index: !page?.noIndex,
+      follow: !page?.noFollow,
+    },
+    alternates: {
+      canonical: page?.canonicalUrl || 'https://numvax.com/cookie-policy',
+    },
+    openGraph: {
+      title,
+      description,
+      url: page?.canonicalUrl || 'https://numvax.com/cookie-policy',
+      siteName: 'Numvax',
+    },
+  };
+}
+
+export default async function CookiePolicyPage() {
+  const page = await getPageContent('cookie-policy');
+  const h1Title = page?.h1Title || 'Cookie Policy';
+
   const breadcrumbs = [
     { name: 'Home', url: 'https://numvax.com' },
     { name: 'Cookie Policy', url: 'https://numvax.com/cookie-policy' },
@@ -25,7 +45,7 @@ export default function CookiePolicyPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight flex items-center gap-3">
           <Cookie className="w-8 h-8 text-neutral-900" />
-          Cookie Policy
+          {h1Title}
         </h1>
         <p className="text-sm text-neutral-500 font-medium">
           Last Updated: August 2026 | Effective Date: August 2026
@@ -52,10 +72,10 @@ export default function CookiePolicyPage() {
             Numvax uses cookies and tracking technologies for the following primary objectives:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-neutral-700">
-            <li><strong>Site Operation & Security:</strong> To enable core site navigation, prevent fraud, and verify security integrity.</li>
+            <li><strong>Site Operation &amp; Security:</strong> To enable core site navigation, prevent fraud, and verify security integrity.</li>
             <li><strong>Remembering Preferences:</strong> To record your cookie consent choices and user interface preferences locally.</li>
-            <li><strong>Analytics & Performance:</strong> To measure aggregate visitor volume, popular tools, and identify performance bottlenecks via Google Analytics 4.</li>
-            <li><strong>Monetization & Advertising:</strong> To serve non-intrusive advertisements via Google AdSense and authorized ad networks, supporting free tool availability.</li>
+            <li><strong>Analytics &amp; Performance:</strong> To measure aggregate visitor volume, popular tools, and identify performance bottlenecks via Google Analytics 4.</li>
+            <li><strong>Monetization &amp; Advertising:</strong> To serve non-intrusive advertisements via Google AdSense and authorized ad networks, supporting free tool availability.</li>
           </ul>
         </section>
 
@@ -107,7 +127,7 @@ export default function CookiePolicyPage() {
             <div className="p-4 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                  <Info className="w-4 h-4 text-neutral-700" /> B. Performance & Analytics Cookies (Google Analytics 4)
+                  <Info className="w-4 h-4 text-neutral-700" /> B. Performance &amp; Analytics Cookies (Google Analytics 4)
                 </span>
                 <span className="px-2 py-0.5 bg-neutral-100 text-neutral-700 border border-neutral-200 rounded-full text-[10px] font-semibold">Consent Required</span>
               </div>
@@ -146,7 +166,7 @@ export default function CookiePolicyPage() {
             <div className="p-4 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-neutral-900 text-sm flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-neutral-700" /> C. Advertising & Targeting Cookies (Google AdSense)
+                  <CheckCircle2 className="w-4 h-4 text-neutral-700" /> C. Advertising &amp; Targeting Cookies (Google AdSense)
                 </span>
                 <span className="px-2 py-0.5 bg-neutral-100 text-neutral-700 border border-neutral-200 rounded-full text-[10px] font-semibold">Consent Required</span>
               </div>
@@ -240,10 +260,10 @@ export default function CookiePolicyPage() {
               Most web browsers allow you to manage or block cookies through browser preferences:
             </p>
             <ul className="list-disc pl-5 text-xs text-neutral-600 space-y-1">
-              <li><strong>Google Chrome:</strong> Settings $\rightarrow$ Privacy and security $\rightarrow$ Third-party cookies.</li>
-              <li><strong>Mozilla Firefox:</strong> Settings $\rightarrow$ Privacy &amp; Security $\rightarrow$ Enhanced Tracking Protection.</li>
-              <li><strong>Apple Safari:</strong> Preferences $\rightarrow$ Privacy $\rightarrow$ Block all cookies.</li>
-              <li><strong>Microsoft Edge:</strong> Settings $\rightarrow$ Cookies and site permissions $\rightarrow$ Manage and delete cookies.</li>
+              <li><strong>Google Chrome:</strong> Settings &rarr; Privacy and security &rarr; Third-party cookies.</li>
+              <li><strong>Mozilla Firefox:</strong> Settings &rarr; Privacy &amp; Security &rarr; Enhanced Tracking Protection.</li>
+              <li><strong>Apple Safari:</strong> Preferences &rarr; Privacy &rarr; Block all cookies.</li>
+              <li><strong>Microsoft Edge:</strong> Settings &rarr; Cookies and site permissions &rarr; Manage and delete cookies.</li>
             </ul>
           </div>
         </section>

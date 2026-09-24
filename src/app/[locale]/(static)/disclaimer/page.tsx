@@ -2,17 +2,37 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
+import { getPageContent } from '@/lib/contentService';
 import { AlertTriangle, DollarSign, Activity, FileCheck2, ShieldAlert, Cpu } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Disclaimer - Numvax',
-  description: 'Numvax accuracy disclaimer, financial calculations disclaimer, health estimates, and file processing terms.',
-  alternates: {
-    canonical: 'https://numvax.com/disclaimer',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageContent('disclaimer');
+  const title = page?.metaTitle || 'Disclaimer - Numvax';
+  const description = page?.metaDescription || 'Numvax accuracy disclaimer, financial calculations disclaimer, health estimates, and file processing terms.';
 
-export default function DisclaimerPage() {
+  return {
+    title,
+    description,
+    robots: {
+      index: !page?.noIndex,
+      follow: !page?.noFollow,
+    },
+    alternates: {
+      canonical: page?.canonicalUrl || 'https://numvax.com/disclaimer',
+    },
+    openGraph: {
+      title,
+      description,
+      url: page?.canonicalUrl || 'https://numvax.com/disclaimer',
+      siteName: 'Numvax',
+    },
+  };
+}
+
+export default async function DisclaimerPage() {
+  const page = await getPageContent('disclaimer');
+  const h1Title = page?.h1Title || 'Legal & Accuracy Disclaimer';
+
   const breadcrumbs = [
     { name: 'Home', url: 'https://numvax.com' },
     { name: 'Disclaimer', url: 'https://numvax.com/disclaimer' },
@@ -25,7 +45,7 @@ export default function DisclaimerPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight flex items-center gap-3">
           <AlertTriangle className="w-8 h-8 text-neutral-900" />
-          Legal & Accuracy Disclaimer
+          {h1Title}
         </h1>
         <p className="text-sm text-neutral-500 font-medium">
           Last Updated: August 2026 | Effective Date: August 2026
@@ -38,7 +58,7 @@ export default function DisclaimerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-neutral-800" />
-            1. General Educational & Utility Disclaimer
+            1. General Educational &amp; Utility Disclaimer
           </h2>
           <p>
             The information, mathematical calculations, converters, tools, and content provided on <strong>Numvax</strong> (<Link href="/" className="text-neutral-900 font-semibold underline">https://numvax.com</Link>) are for <strong>general informational, educational, and estimation purposes only</strong>.
@@ -68,14 +88,14 @@ export default function DisclaimerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <Activity className="w-5 h-5 text-red-600" />
-            3. Health & Fitness Calculations Disclaimer (BMI)
+            3. Health &amp; Fitness Calculations Disclaimer (BMI)
           </h2>
           <p>
             The Body Mass Index (BMI) Calculator on Numvax utilizes the standard World Health Organization (WHO) adult screening formulas.
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-neutral-700">
             <li><strong>Not a Medical Diagnosis:</strong> BMI is a general population screening metric comparing weight to height and does NOT measure individual body fat percentage, muscular density, bone structure, or metabolic health.</li>
-            <li><strong>Athletes & Special Populations:</strong> BMI calculations may be inaccurate for pregnant individuals, competitive athletes, bodybuilders, children, and seniors.</li>
+            <li><strong>Athletes &amp; Special Populations:</strong> BMI calculations may be inaccurate for pregnant individuals, competitive athletes, bodybuilders, children, and seniors.</li>
             <li><strong>Medical Consultation:</strong> Never disregard professional medical advice or delay seeking clinical attention because of something you have calculated on this site. Consult a physician or registered dietitian for clinical health assessments.</li>
           </ul>
         </section>
@@ -84,7 +104,7 @@ export default function DisclaimerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <FileCheck2 className="w-5 h-5 text-neutral-800" />
-            4. Document & File Processing Integrity
+            4. Document &amp; File Processing Integrity
           </h2>
           <p>
             Numvax provides PDF manipulation (merging, splitting, compression, conversion), optical character recognition (OCR), and image tools that process files client-side inside your browser memory.
@@ -100,7 +120,7 @@ export default function DisclaimerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <Cpu className="w-5 h-5 text-neutral-800" />
-            5. Developer Utilities & Cryptographic Tools
+            5. Developer Utilities &amp; Cryptographic Tools
           </h2>
           <p>
             Developer tools (such as Hash Generators, Password Generators, Base64 Encoders, and JWT Decoders) are provided for development and testing convenience. While password generators use cryptographically strong client-side pseudorandom number generators (<code>crypto.getRandomValues</code>), you remain solely responsible for the implementation, storage, and security of your credentials and application keys.
@@ -109,7 +129,7 @@ export default function DisclaimerPage() {
 
         {/* Section 6: Third-Party Advertisements */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">6. Third-Party Advertisements & Links</h2>
+          <h2 className="text-xl font-bold text-neutral-900">6. Third-Party Advertisements &amp; Links</h2>
           <p>
             Advertisements displayed on Numvax are served by third-party advertising partners, including Google AdSense. Numvax does not endorse, sponsor, or guarantee any external products, services, or claims advertised on our platform. Clicking external links or advertisements directs you to third-party domains governed by their respective terms and privacy policies.
           </p>

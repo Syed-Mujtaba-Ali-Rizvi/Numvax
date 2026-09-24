@@ -1,73 +1,79 @@
 import { MetadataRoute } from 'next';
+import { prisma } from '../lib/prisma';
+import { ensureDatabaseSeeded } from '../lib/dbSeeder';
 import { CALCULATOR_CATALOG } from '../lib/catalog';
 import { TOOL_CATALOG } from '../lib/toolCatalog';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://numvax.com';
-  const lastModified = new Date('2026-08-14');
+  const now = new Date();
 
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`, lastModified, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/calculators`, lastModified, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/tools`, lastModified, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/all-tools`, lastModified, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/about`, lastModified, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/contact`, lastModified, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`, lastModified, changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/cookie-policy`, lastModified, changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/terms`, lastModified, changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/disclaimer`, lastModified, changeFrequency: 'monthly', priority: 0.3 },
+  const staticSlugs = [
+    { slug: '', priority: 1.0, changeFrequency: 'daily' as const },
+    { slug: 'calculators', priority: 0.9, changeFrequency: 'daily' as const },
+    { slug: 'tools', priority: 0.9, changeFrequency: 'daily' as const },
+    { slug: 'all-tools', priority: 0.9, changeFrequency: 'daily' as const },
+    { slug: 'about', priority: 0.6, changeFrequency: 'monthly' as const },
+    { slug: 'contact', priority: 0.6, changeFrequency: 'monthly' as const },
+    { slug: 'privacy-policy', priority: 0.3, changeFrequency: 'monthly' as const },
+    { slug: 'cookie-policy', priority: 0.3, changeFrequency: 'monthly' as const },
+    { slug: 'terms', priority: 0.3, changeFrequency: 'monthly' as const },
+    { slug: 'disclaimer', priority: 0.3, changeFrequency: 'monthly' as const },
   ];
 
-  const calculatorCategoryPages: MetadataRoute.Sitemap = [
-    'financial',
-    'health',
-    'math',
-    'date-time',
-    'education',
-    'converters',
-  ].map((category) => ({
-    url: `${baseUrl}/calculators/category/${category}`,
-    lastModified,
+  const staticEntries: MetadataRoute.Sitemap = staticSlugs.map((p) => ({
+    url: p.slug ? `${baseUrl}/${p.slug}` : `${baseUrl}/`,
+    lastModified: now,
+    changeFrequency: p.changeFrequency,
+    priority: p.priority,
+  }));
+
+  let tools: Array<{ slug: string; updatedAt: Date }> = [];
+  let categories: Array<{ slug: string; updatedAt: Date }> = [];
+
+  try {
+    await ensureDatabaseSeeded();
+    tools = await prisma.tool.findMany({
+      where: {
+        isEnabled: true,
+        isDraft: false,
+        inSitemap: true,
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+      },
+    });
+
+    categories = await prisma.toolCategory.findMany({
+      where: { noIndex: false },
+      select: { slug: true, updatedAt: true },
+    });
+  } catch (err) {
+    console.error('[sitemap] DB query fallback to catalog:', err);
+  }
+
+  // Fallback to static catalog if DB returned empty
+  if (tools.length === 0) {
+    const calcSlugs = Object.keys(CALCULATOR_CATALOG);
+    const toolSlugs = Object.keys(TOOL_CATALOG);
+    const allSlugs = Array.from(new Set([...calcSlugs, ...toolSlugs]));
+    tools = allSlugs.map((s) => ({ slug: s, updatedAt: now }));
+  }
+
+  const toolEntries: MetadataRoute.Sitemap = tools.map((t) => ({
+    url: `${baseUrl}/${t.slug}`,
+    lastModified: t.updatedAt || now,
+    changeFrequency: 'weekly',
+    priority: 0.9,
+  }));
+
+  const categoryEntries: MetadataRoute.Sitemap = categories.map((c) => ({
+    url: `${baseUrl}/tools/category/${c.slug}`,
+    lastModified: c.updatedAt || now,
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  const toolCategoryPages: MetadataRoute.Sitemap = [
-    'pdf-tools',
-    'image-tools',
-    'text-tools',
-    'converters',
-    'developer-tools',
-    'seo-tools',
-    'generators',
-  ].map((category) => ({
-    url: `${baseUrl}/tools/category/${category}`,
-    lastModified,
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
-
-  // Clean root URLs (e.g. /percentage-calculator, /compress-pdf)
-  const rootCalculatorPages: MetadataRoute.Sitemap = Object.keys(CALCULATOR_CATALOG).map((slug) => ({
-    url: `${baseUrl}/${slug}`,
-    lastModified,
-    changeFrequency: 'weekly',
-    priority: 1.0,
-  }));
-
-  const rootToolPages: MetadataRoute.Sitemap = Object.keys(TOOL_CATALOG).map((slug) => ({
-    url: `${baseUrl}/${slug}`,
-    lastModified,
-    changeFrequency: 'weekly',
-    priority: 1.0,
-  }));
-
-  return [
-    ...staticPages,
-    ...calculatorCategoryPages,
-    ...toolCategoryPages,
-    ...rootCalculatorPages,
-    ...rootToolPages,
-  ];
+  return [...staticEntries, ...categoryEntries, ...toolEntries];
 }

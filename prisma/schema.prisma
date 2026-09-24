@@ -10,60 +10,208 @@ generator client {
 model Admin {
   id               String   @id @default(uuid())
   email            String   @unique
-  name             String
+  name             String   @default("Admin")
   passwordHash     String
+  role             String   @default("superadmin") // superadmin, editor
   twoFactorEnabled Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
 
 model ToolCategory {
-  id          String   @id @default(uuid())
-  slug        String   @unique
-  name        String
-  description String?
-  icon        String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tools       Tool[]
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  name              String
+  description       String?
+  h1Title           String?
+  metaTitle         String?
+  metaDescription   String?
+  focusKeyword      String?
+  secondaryKeywords String?  // comma separated or JSON string
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImage           String?
+  icon              String?
+  order             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tools             Tool[]
 }
 
 model Tool {
-  id               String        @id @default(uuid())
-  slug             String        @unique
-  name             String
-  categoryId       String
-  type             String        @default("calculator") // calculator, pdf, image, text, converter, developer, seo
-  description      String
-  shortDescription String
-  icon             String?
-  isPopular        Boolean       @default(false)
-  isFeatured       Boolean       @default(false)
-  isEnabled        Boolean       @default(true)
-  order            Int           @default(0)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  slug              String        @unique
+  name              String
+  categoryId        String
+  type              String        @default("calculator") // calculator, pdf, image, text, converter, developer, seo, scanner
+  description       String        @default("")
+  shortDescription  String        @default("")
+  icon              String?
+  isPopular         Boolean       @default(false)
+  isFeatured        Boolean       @default(false)
+  isEnabled         Boolean       @default(true)
+  isDraft           Boolean       @default(false)
+  inSitemap         Boolean       @default(true)
+  order             Int           @default(0)
+  focusKeyword      String?
+  secondaryKeywords String?       // comma separated
+  searchKeywords    String?       // comma separated keywords for internal search
+  searchAliases     String?       // comma separated aliases for internal search
+  relatedToolSlugs  String?       // JSON string of related slugs array ["split-pdf", "compress-pdf"]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  category         ToolCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  content          ToolContent?
-  usage            ToolUsage[]
-  usageDaily       ToolUsageDaily[]
+  category          ToolCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  content           ToolContent?
+  usage             ToolUsage[]
+  usageDaily        ToolUsageDaily[]
 }
 
 model ToolContent {
-  id                 String   @id @default(uuid())
-  toolId             String   @unique
-  h1Title            String
-  metaTitle          String
-  metaDescription    String
-  formulaExplanation String
-  workedExamplesJson String   // JSON string of examples array
-  faqItemsJson       String   // JSON string of FAQ items array
-  instructions       String
-  updatedAt          DateTime @updatedAt
+  id                     String   @id @default(uuid())
+  toolId                 String   @unique
+  h1Title                String?
+  metaTitle              String?
+  metaDescription        String?
+  focusKeyword           String?
+  secondaryKeywords      String?
+  canonicalUrl           String?
+  noIndex                Boolean  @default(false)
+  noFollow               Boolean  @default(false)
+  
+  // Content sections
+  explanation            String?
+  directAnswer           String?
+  formulaTitle           String?
+  formulaDescription     String?
+  instructionsTitle      String?
+  instructionsDescription String?
+  useCases               String?
+  trustCopy              String?
+  workedExamplesJson     String?  // JSON string: Array<{title: string, example: string}>
+  faqItemsJson           String?  // JSON string: Array<{question: string, answer: string}>
+  
+  // Social SEO
+  ogTitle                String?
+  ogDescription          String?
+  ogImage                String?
+  twitterTitle           String?
+  twitterDescription     String?
+  twitterImage           String?
+  
+  // Advanced Structured Data
+  customSchemaJson       String?  // JSON string for custom JSON-LD schema
+  
+  updatedAt              DateTime @updatedAt
 
-  tool               Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  tool                   Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+}
+
+model PageContent {
+  id                 String   @id @default(uuid())
+  slug               String   @unique // e.g. "homepage", "about", "contact", "privacy-policy", "cookie-policy", "terms", "disclaimer", "all-tools"
+  title              String
+  h1Title            String?
+  metaTitle          String?
+  metaDescription    String?
+  focusKeyword       String?
+  secondaryKeywords  String?
+  canonicalUrl       String?
+  noIndex            Boolean  @default(false)
+  noFollow           Boolean  @default(false)
+  inSitemap          Boolean  @default(true)
+  content            String?  // Rich text or markdown body content
+  
+  // Social SEO
+  ogTitle            String?
+  ogDescription      String?
+  ogImage            String?
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+  
+  // Advanced Structured Data
+  customSchemaJson   String?
+  isPublished        Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+model Keyword {
+  id          String   @id @default(uuid())
+  keyword     String   @unique
+  type        String   @default("primary") // primary, secondary, long_tail, related
+  targetSlug  String?  // associated tool/page slug
+  targetType  String?  // tool, page, category
+  searchVolume Int?
+  difficulty  Int?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Redirect {
+  id         String   @id @default(uuid())
+  sourceUrl  String   @unique // e.g. "/old-tool-slug"
+  targetUrl  String   // e.g. "/new-tool-slug"
+  statusCode Int      @default(301) // 301 or 302
+  isActive   Boolean  @default(true)
+  hitCount   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SiteSettings {
+  id                     String   @id @default("default")
+  siteName               String   @default("Numvax")
+  tagline                String   @default("Fast, accurate and easy-to-use free online tools")
+  titleTemplate          String   @default("{{title}} | Numvax")
+  defaultMetaDescription String   @default("Fast, accurate and easy-to-use calculators, converters, developer tools, text utilities, and PDF tools.")
+  defaultOgImage         String   @default("/og-image.jpg")
+  defaultRobots          String   @default("index, follow")
+  defaultCanonical       String   @default("https://numvax.com")
+  robotsTxtContent       String?
+  contactEmail           String   @default("contact@numvax.com")
+  logoUrl                String?
+  socialTwitter          String?  @default("https://twitter.com/numvax")
+  socialFacebook         String?
+  socialGithub           String?  @default("https://github.com/Syed-Mujtaba-Ali-Rizvi/Numvax")
+  socialLinkedin         String?
+  
+  // Homepage Specific
+  heroHeading            String   @default("Every Online Tool You'll Ever Need. 100% Free & Private.")
+  heroDescription        String   @default("Fast, precise, client-side tools: Calculators, PDF utilities, image editors, developer formatters, and converters. No signup, no files uploaded to servers.")
+  searchPlaceholder      String   @default("Search 50+ tools (e.g., BMI Calculator, Merge PDF, JSON Formatter)...")
+  featuredToolSlugs      String?  // JSON string: ["bmi-calculator", "merge-pdf", "json-formatter"]
+  popularToolSlugs       String?  // JSON string: ["percentage-calculator", "image-compressor", "uuid-generator"]
+  
+  // Ad Management
+  adsEnabled             Boolean  @default(true)
+  headerAdActive         Boolean  @default(false)
+  sidebarAdActive        Boolean  @default(true)
+  inContentAdActive      Boolean  @default(true)
+  belowResultsAdActive   Boolean  @default(true)
+  footerAdActive         Boolean  @default(true)
+  headerAdScript         String?
+  sidebarAdScript        String?
+  inContentAdScript      String?
+  belowResultsAdScript   String?
+  footerAdScript         String?
+  
+  updatedAt              DateTime @updatedAt
+}
+
+model RevisionHistory {
+  id           String   @id @default(uuid())
+  entityType   String   // "tool", "page", "category", "settings", "redirect", "robots"
+  entityId     String
+  entityTitle  String?
+  action       String   // "CREATE", "UPDATE", "DELETE", "RESTORE"
+  changedBy    String   @default("Admin")
+  previousData String?  // JSON string
+  newData      String?  // JSON string
+  createdAt    DateTime @default(now())
 }
 
 model ToolUsage {
@@ -84,35 +232,6 @@ model ToolUsageDaily {
   tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   @@unique([toolId, date])
-}
-
-model SiteSettings {
-  id                   String   @id @default("default")
-  siteName             String   @default("Calcora")
-  tagline              String   @default("Fast, accurate and easy-to-use free online tools")
-  logoUrl              String?
-  contactEmail         String   @default("contact@calcora.com")
-  adsEnabled           Boolean  @default(true)
-  headerAdActive       Boolean  @default(true)
-  sidebarAdActive      Boolean  @default(true)
-  inContentAdActive    Boolean  @default(true)
-  belowResultsAdActive  Boolean  @default(true)
-  footerAdActive       Boolean  @default(true)
-  analyticsId          String?
-  updatedAt            DateTime @updatedAt
-}
-
-model SeoPage {
-  id              String   @id @default(uuid())
-  path            String   @unique
-  title           String
-  metaDescription String
-  canonicalUrl    String?
-  ogTitle         String?
-  ogDescription   String?
-  ogImage         String?
-  noIndex         Boolean  @default(false)
-  updatedAt       DateTime @updatedAt
 }
 
 model ContactMessage {

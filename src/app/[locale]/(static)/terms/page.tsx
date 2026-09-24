@@ -2,17 +2,37 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
+import { getPageContent } from '@/lib/contentService';
 import { FileCheck, ShieldAlert, Scale, Ban, AlertCircle, HelpCircle } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service - Numvax',
-  description: 'Numvax terms of service, conditions of use, acceptable use policy, and legal agreements.',
-  alternates: {
-    canonical: 'https://numvax.com/terms',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageContent('terms');
+  const title = page?.metaTitle || 'Terms of Service - Numvax';
+  const description = page?.metaDescription || 'Numvax terms of service, conditions of use, acceptable use policy, and legal agreements.';
 
-export default function TermsPage() {
+  return {
+    title,
+    description,
+    robots: {
+      index: !page?.noIndex,
+      follow: !page?.noFollow,
+    },
+    alternates: {
+      canonical: page?.canonicalUrl || 'https://numvax.com/terms',
+    },
+    openGraph: {
+      title,
+      description,
+      url: page?.canonicalUrl || 'https://numvax.com/terms',
+      siteName: 'Numvax',
+    },
+  };
+}
+
+export default async function TermsPage() {
+  const page = await getPageContent('terms');
+  const h1Title = page?.h1Title || 'Terms of Service';
+
   const breadcrumbs = [
     { name: 'Home', url: 'https://numvax.com' },
     { name: 'Terms of Service', url: 'https://numvax.com/terms' },
@@ -25,7 +45,7 @@ export default function TermsPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight flex items-center gap-3">
           <Scale className="w-8 h-8 text-neutral-900" />
-          Terms of Service
+          {h1Title}
         </h1>
         <p className="text-sm text-neutral-500 font-medium">
           Last Updated: August 2026 | Effective Date: August 2026
@@ -50,7 +70,7 @@ export default function TermsPage() {
 
         {/* Section 2: Nature of Services */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">2. Description of Services & Client-Side Execution</h2>
+          <h2 className="text-xl font-bold text-neutral-900">2. Description of Services &amp; Client-Side Execution</h2>
           <p>
             Numvax provides free, browser-based online utility tools and mathematical calculators for productivity, education, document handling, and technical development.
           </p>
@@ -63,7 +83,7 @@ export default function TermsPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <Ban className="w-5 h-5 text-red-600" />
-            3. Acceptable Use & Prohibited Activities
+            3. Acceptable Use &amp; Prohibited Activities
           </h2>
           <p>
             You agree to use Numvax only for lawful purposes and in accordance with these Terms. You specifically agree NOT to:
@@ -82,7 +102,7 @@ export default function TermsPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-amber-600" />
-            4. Educational & Informational Purposes Only
+            4. Educational &amp; Informational Purposes Only
           </h2>
           <p>
             All calculations, estimations, unit conversions, formulas, and content provided on Numvax are provided strictly for <strong>general informational, educational, and estimation purposes only</strong>.
@@ -105,7 +125,7 @@ export default function TermsPage() {
 
         {/* Section 6: Third-Party Links & Ads */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-neutral-900">6. Third-Party Advertisements & External Links</h2>
+          <h2 className="text-xl font-bold text-neutral-900">6. Third-Party Advertisements &amp; External Links</h2>
           <p>
             Numvax displays third-party advertisements served by Google AdSense and authorized advertising networks. We do not endorse, guarantee, or assume liability for the accuracy, legality, or quality of products or services promoted in third-party advertisements or external websites linked to from our platform.
           </p>

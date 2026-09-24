@@ -1,10 +1,12 @@
 import React from 'react';
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
-import { notFound } from 'next/navigation';
+import { notFound, redirect, RedirectType } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { CALCULATOR_CATALOG } from '../../../lib/catalog';
 import { TOOL_CATALOG } from '../../../lib/toolCatalog';
+import { getToolWithContent } from '../../../lib/contentService';
+import { prisma } from '../../../lib/prisma';
 import { CalculatorLayout } from '../../../components/calculator/CalculatorLayout';
 import { ToolLayout } from '../../../components/tool/ToolLayout';
 import { routing } from '../../../i18n/routing';
@@ -76,45 +78,47 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const item = CALCULATOR_CATALOG[slug] || TOOL_CATALOG[slug];
-  if (!item) return {};
+  const item = await getToolWithContent(slug);
+  if (!item || !item.isEnabled || item.isDraft) return {};
 
   const baseUrl = 'https://numvax.com';
-  const enUrl = `${baseUrl}/${slug}`;
+  const canonicalUrl = item.canonicalUrl || `${baseUrl}/${slug}`;
 
   return {
     title: item.metaTitle,
     description: item.metaDescription,
     robots: {
-      index: locale === 'en',
-      follow: true,
+      index: locale === 'en' && !item.noIndex,
+      follow: !item.noFollow,
       googleBot: {
-        index: locale === 'en',
-        follow: true,
+        index: locale === 'en' && !item.noIndex,
+        follow: !item.noFollow,
         'max-video-preview': -1,
         'max-image-preview': 'large',
         'max-snippet': -1,
       },
     },
     alternates: {
-      canonical: enUrl,
+      canonical: canonicalUrl,
       languages: {
-        'x-default': enUrl,
-        en: enUrl,
+        'x-default': canonicalUrl,
+        en: canonicalUrl,
       },
     },
     openGraph: {
-      title: item.metaTitle,
-      description: item.metaDescription,
-      url: enUrl,
+      title: item.ogTitle || item.metaTitle,
+      description: item.ogDescription || item.metaDescription,
+      url: canonicalUrl,
       siteName: 'Numvax',
       locale: 'en_US',
       type: 'website',
+      images: item.ogImage ? [{ url: item.ogImage }] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
-      title: item.metaTitle,
-      description: item.metaDescription,
+      title: item.twitterTitle || item.metaTitle,
+      description: item.twitterDescription || item.metaDescription,
+      images: item.twitterImage ? [item.twitterImage] : undefined,
     },
   };
 }
@@ -123,9 +127,36 @@ export default async function LocaleSlugPage({ params }: PageProps) {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: 'tool' });
 
-  // 1. Check Calculator Catalog
-  const calcItem = CALCULATOR_CATALOG[slug];
-  if (calcItem) {
+  // 1. Check for Active 301/302 Redirect in Database
+  try {
+    const activeRedirect = await prisma.redirect.findFirst({
+      where: {
+        sourceUrl: {
+          in: [`/${slug}`, slug, `/${locale}/${slug}`],
+        },
+        isActive: true,
+      },
+    });
+
+    if (activeRedirect) {
+      redirect(activeRedirect.targetUrl, activeRedirect.statusCode === 301 ? RedirectType.replace : RedirectType.push);
+    }
+  } catch (err: any) {
+    // If Next.js redirect thrown, re-throw so navigation completes
+    if (err?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw err;
+    }
+    console.error('[LocaleSlugPage redirect check error]:', err);
+  }
+
+  // 2. Fetch Merged Tool Data (Database + Catalog Fallback)
+  const item = await getToolWithContent(slug);
+  if (!item || !item.isEnabled || item.isDraft) {
+    notFound();
+  }
+
+  // 3. Calculator Tool Execution Engine
+  if (item.type === 'calculator') {
     const renderCalculatorComponent = () => {
       switch (slug) {
         case 'bmi-calculator': return <BmiCalculator />;
@@ -139,139 +170,149 @@ export default async function LocaleSlugPage({ params }: PageProps) {
     };
 
     return (
-      <CalculatorLayout
-        slug={calcItem.slug}
-        title={calcItem.h1Title}
-        subtitle={calcItem.shortDescription}
-        categoryName={calcItem.categoryName}
-        categorySlug={calcItem.categorySlug}
-        explanation={calcItem.explanation}
-        directAnswer={calcItem.directAnswer}
-        formulaTitle={calcItem.formulaTitle}
-        formulaDescription={calcItem.formulaDescription}
-        workedExamples={calcItem.workedExamples}
-        useCases={calcItem.useCases}
-        faqs={calcItem.faqs}
-        relatedTools={calcItem.relatedTools}
-        locale={locale}
-      >
-        {renderCalculatorComponent()}
-      </CalculatorLayout>
+      <>
+        {item.customSchemaJson && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: item.customSchemaJson }}
+          />
+        )}
+        <CalculatorLayout
+          slug={item.slug}
+          title={item.h1Title}
+          subtitle={item.shortDescription}
+          categoryName={item.categoryName}
+          categorySlug={item.categorySlug}
+          explanation={item.explanation}
+          directAnswer={item.directAnswer}
+          formulaTitle={item.formulaTitle}
+          formulaDescription={item.formulaDescription}
+          workedExamples={item.workedExamples}
+          useCases={item.useCases}
+          faqs={item.faqs}
+          relatedTools={item.relatedTools}
+          locale={locale}
+        >
+          {renderCalculatorComponent()}
+        </CalculatorLayout>
+      </>
     );
   }
 
-  // 2. Check Tool Catalog
-  const toolItem = TOOL_CATALOG[slug];
-  if (toolItem) {
-    const renderToolComponent = () => {
-      switch (slug) {
-        case 'scan-to-pdf': return <DocumentScanner />;
-        case 'robots-txt-generator': return <RobotsGenerator />;
-        case 'xml-sitemap-generator':
-        case 'schema-markup-generator':
-        case 'open-graph-generator':
-        case 'meta-tag-analyzer':
-        case 'meta-description-checker':
-        case 'title-tag-checker':
-        case 'keyword-density-checker':
-        case 'redirect-checker':
-        case 'dns-lookup':
-        case 'ssl-checker':
-          return <SeoTools toolSlug={slug} />;
-        case 'merge-pdf': return <MergePdf />;
-        case 'split-pdf': return <SplitPdf />;
-        case 'compress-pdf': return <CompressPdf />;
-        case 'pdf-to-jpg': return <PdfToJpg />;
-        case 'pdf-to-word': return <PdfToWord />;
-        case 'pdf-to-excel': return <PdfToExcel />;
-        case 'word-to-pdf': return <WordToPdf />;
-        case 'jpg-to-pdf': return <JpgToPdf />;
-        case 'edit-pdf': return <EditPdf />;
-        case 'add-signature-pdf': return <SignPdf />;
-        case 'add-watermark-pdf': return <WatermarkPdf />;
-        case 'remove-password-pdf': return <UnlockPdf />;
-        case 'protect-pdf': return <ProtectPdf />;
-        case 'json-formatter':
-        case 'json-minifier':
-        case 'json-validator':
-        case 'json-to-csv':
-          return <JsonFormatter />;
-        case 'base64-encoder-decoder':
-        case 'url-encoder-decoder':
-          return <Base64Tool />;
-        case 'uuid-generator': return <UuidGenerator />;
-        case 'password-generator': return <PasswordGenerator />;
-        case 'hash-generator': return <HashGenerator />;
-        case 'jwt-decoder': return <JwtDecoder />;
-        case 'qr-code-generator': return <QrCodeGenerator />;
-        case 'bulk-qr-code-generator': return <QrCodeGenerator defaultMode="bulk" />;
-        case 'image-qr-code-generator': return <ImageQrCodeGenerator />;
-        case 'lorem-ipsum-generator': return <LoremIpsumGenerator />;
-        case 'regex-tester':
-        case 'html-formatter':
-        case 'css-formatter':
-        case 'js-formatter':
-        case 'sql-formatter':
-        case 'markdown-editor':
-        case 'color-code-converter':
-        case 'http-status-reference':
-          return <CodeFormatters toolSlug={slug} />;
-        case 'word-counter':
-        case 'character-counter':
-        case 'remove-extra-spaces':
-        case 'remove-duplicate-lines':
-        case 'find-and-replace':
-        case 'text-compare':
-          return <TextTools toolSlug={slug} />;
-        case 'case-converter': return <CaseConverter />;
-        case 'grammar-checker': return <GrammarChecker />;
-        case 'image-to-word': return <ImageToWord />;
-        case 'image-compressor':
-        case 'bulk-image-compressor':
-        case 'image-resizer':
-        case 'image-converter':
-        case 'image-filter':
-          return <ImageTools toolSlug={slug} defaultMode={slug === 'bulk-image-compressor' ? 'bulk' : undefined} />;
-        case 'length-converter':
-        case 'weight-converter':
-        case 'temperature-converter':
-        case 'speed-converter':
-        case 'volume-converter':
-        case 'area-converter':
-        case 'data-unit-converter':
-          return <UnitConverters toolSlug={slug} />;
-        default:
-          return (
-            <div className="p-8 text-center bg-white border border-neutral-200 rounded-2xl">
-              <p className="text-sm text-neutral-500 font-medium">{t('toolLoaded')}</p>
-            </div>
-          );
-      }
-    };
+  // 4. Utility / Developer / PDF / Image / SEO Tool Execution Engine
+  const renderToolComponent = () => {
+    switch (slug) {
+      case 'scan-to-pdf': return <DocumentScanner />;
+      case 'robots-txt-generator': return <RobotsGenerator />;
+      case 'xml-sitemap-generator':
+      case 'schema-markup-generator':
+      case 'open-graph-generator':
+      case 'meta-tag-analyzer':
+      case 'meta-description-checker':
+      case 'title-tag-checker':
+      case 'keyword-density-checker':
+      case 'redirect-checker':
+      case 'dns-lookup':
+      case 'ssl-checker':
+        return <SeoTools toolSlug={slug} />;
+      case 'merge-pdf': return <MergePdf />;
+      case 'split-pdf': return <SplitPdf />;
+      case 'compress-pdf': return <CompressPdf />;
+      case 'pdf-to-jpg': return <PdfToJpg />;
+      case 'pdf-to-word': return <PdfToWord />;
+      case 'pdf-to-excel': return <PdfToExcel />;
+      case 'word-to-pdf': return <WordToPdf />;
+      case 'jpg-to-pdf': return <JpgToPdf />;
+      case 'edit-pdf': return <EditPdf />;
+      case 'add-signature-pdf': return <SignPdf />;
+      case 'add-watermark-pdf': return <WatermarkPdf />;
+      case 'remove-password-pdf': return <UnlockPdf />;
+      case 'protect-pdf': return <ProtectPdf />;
+      case 'json-formatter':
+      case 'json-minifier':
+      case 'json-validator':
+      case 'json-to-csv':
+        return <JsonFormatter />;
+      case 'base64-encoder-decoder':
+      case 'url-encoder-decoder':
+        return <Base64Tool />;
+      case 'uuid-generator': return <UuidGenerator />;
+      case 'password-generator': return <PasswordGenerator />;
+      case 'hash-generator': return <HashGenerator />;
+      case 'jwt-decoder': return <JwtDecoder />;
+      case 'qr-code-generator': return <QrCodeGenerator />;
+      case 'bulk-qr-code-generator': return <QrCodeGenerator defaultMode="bulk" />;
+      case 'image-qr-code-generator': return <ImageQrCodeGenerator />;
+      case 'lorem-ipsum-generator': return <LoremIpsumGenerator />;
+      case 'regex-tester':
+      case 'html-formatter':
+      case 'css-formatter':
+      case 'js-formatter':
+      case 'sql-formatter':
+      case 'markdown-editor':
+      case 'color-code-converter':
+      case 'http-status-reference':
+        return <CodeFormatters toolSlug={slug} />;
+      case 'word-counter':
+      case 'character-counter':
+      case 'remove-extra-spaces':
+      case 'remove-duplicate-lines':
+      case 'find-and-replace':
+      case 'text-compare':
+        return <TextTools toolSlug={slug} />;
+      case 'case-converter': return <CaseConverter />;
+      case 'grammar-checker': return <GrammarChecker />;
+      case 'image-to-word': return <ImageToWord />;
+      case 'image-compressor':
+      case 'bulk-image-compressor':
+      case 'image-resizer':
+      case 'image-converter':
+      case 'image-filter':
+        return <ImageTools toolSlug={slug} defaultMode={slug === 'bulk-image-compressor' ? 'bulk' : undefined} />;
+      case 'length-converter':
+      case 'weight-converter':
+      case 'temperature-converter':
+      case 'speed-converter':
+      case 'volume-converter':
+      case 'area-converter':
+      case 'data-unit-converter':
+        return <UnitConverters toolSlug={slug} />;
+      default:
+        return (
+          <div className="p-8 text-center bg-white border border-neutral-200 rounded-2xl">
+            <p className="text-sm text-neutral-500 font-medium">{t('toolLoaded')}</p>
+          </div>
+        );
+    }
+  };
 
-    return (
+  return (
+    <>
+      {item.customSchemaJson && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: item.customSchemaJson }}
+        />
+      )}
       <ToolLayout
-        slug={toolItem.slug}
-        title={toolItem.h1Title}
-        subtitle={toolItem.shortDescription}
-        categoryName={toolItem.categoryName}
-        categorySlug={toolItem.categorySlug}
-        explanation={toolItem.explanation}
-        directAnswer={toolItem.directAnswer}
-        instructionsTitle={toolItem.instructionsTitle || t('howToUse')}
-        instructionsDescription={toolItem.instructionsDescription}
-        workedExamples={toolItem.workedExamples}
-        useCases={toolItem.useCases}
-        faqs={toolItem.faqs}
-        relatedTools={toolItem.relatedTools}
-        trustCopy={toolItem.trustCopy || t('trustCopy')}
+        slug={item.slug}
+        title={item.h1Title}
+        subtitle={item.shortDescription}
+        categoryName={item.categoryName}
+        categorySlug={item.categorySlug}
+        explanation={item.explanation}
+        directAnswer={item.directAnswer}
+        instructionsTitle={item.instructionsTitle || t('howToUse')}
+        instructionsDescription={item.instructionsDescription}
+        workedExamples={item.workedExamples}
+        useCases={item.useCases}
+        faqs={item.faqs}
+        relatedTools={item.relatedTools}
+        trustCopy={item.trustCopy || t('trustCopy')}
         locale={locale}
       >
         {renderToolComponent()}
       </ToolLayout>
-    );
-  }
-
-  // 3. Neither → trigger 404
-  notFound();
+    </>
+  );
 }

@@ -1,481 +1,420 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import {
-  ShieldCheck, BarChart3, Settings, Edit3, Lock, CheckCircle2,
-  RefreshCw, Code2, TrendingUp, Users, MousePointerClick,
-  Monitor, Smartphone, Tablet, Globe, Search, ArrowUpRight,
-  Layers, Target, Activity, Zap, LayoutDashboard
+  ShieldCheck,
+  Wrench,
+  FileText,
+  FolderTree,
+  Search,
+  Settings,
+  Layers,
+  Sparkles,
+  Lock,
+  ArrowUpRight,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Plus,
+  Key,
+  Globe,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { getAnalyticsSummary, trackPageView, type AnalyticsSummary } from '@/lib/analytics';
 
-// ─── Mini Sparkline chart using SVG ────────────────────────────────────────
-const Sparkline: React.FC<{ data: number[]; color?: string }> = ({ data, color = '#171717' }) => {
-  if (!data.length) return null;
-  const max = Math.max(...data, 1);
-  const w = 120; const h = 32;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * h}`).join(' ');
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="opacity-70">
-      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" points={pts} />
-    </svg>
-  );
-};
+export default function AdminMainPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [adminUser, setAdminUser] = useState<any>(null);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-// ─── Metric Card ────────────────────────────────────────────────────────────
-const MetricCard: React.FC<{
-  label: string;
-  value: string | number;
-  sub?: string;
-  icon: React.ReactNode;
-  trend?: number[];
-  accent?: string;
-}> = ({ label, value, sub, icon, trend, accent = '#171717' }) => (
-  <Card className="p-5 flex flex-col gap-3 bg-white border-neutral-200">
-    <div className="flex items-start justify-between">
-      <div className="p-2 bg-neutral-100 rounded-xl text-neutral-700">{icon}</div>
-      {trend && <Sparkline data={trend} color={accent} />}
-    </div>
-    <div>
-      <div className="text-2xl font-black text-neutral-900">{value}</div>
-      <div className="text-xs font-semibold text-neutral-500 mt-0.5">{label}</div>
-      {sub && <div className="text-[11px] text-neutral-400 mt-0.5">{sub}</div>}
-    </div>
-  </Card>
-);
+  // Dashboard Data
+  const [stats, setStats] = useState<any>(null);
+  const [seoIssues, setSeoIssues] = useState<any[]>([]);
+  const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
+  const [recentHistory, setRecentHistory] = useState<any[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
 
-// ─── Tool Row ────────────────────────────────────────────────────────────────
-const ToolRow: React.FC<{ rank: number; slug: string; starts: number; completions: number; rate: number }> = ({
-  rank, slug, starts, completions, rate,
-}) => (
-  <div className="flex items-center gap-3 py-2.5 border-b border-neutral-100 last:border-0">
-    <span className="w-5 text-xs font-bold text-neutral-400 text-right shrink-0">{rank}</span>
-    <div className="flex-1 min-w-0">
-      <div className="text-xs font-bold text-neutral-900 truncate">/{slug}</div>
-      <div className="flex items-center gap-3 mt-0.5">
-        <span className="text-[11px] text-neutral-500">{starts} starts</span>
-        <span className="text-[11px] text-neutral-500">{completions} done</span>
-      </div>
-    </div>
-    <div className="flex flex-col items-end gap-1 shrink-0">
-      <span className={`text-xs font-black ${rate >= 70 ? 'text-green-600' : rate >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
-        {rate}%
-      </span>
-      <div className="w-16 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full ${rate >= 70 ? 'bg-green-500' : rate >= 40 ? 'bg-amber-500' : 'bg-red-400'}`}
-          style={{ width: `${rate}%` }}
-        />
-      </div>
-    </div>
-  </div>
-);
-
-// ─── Device Bar ──────────────────────────────────────────────────────────────
-const DeviceBar: React.FC<{ label: string; count: number; total: number; icon: React.ReactNode }> = ({
-  label, count, total, icon,
-}) => {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3">
-      <div className="text-neutral-500 shrink-0">{icon}</div>
-      <div className="flex-1">
-        <div className="flex justify-between text-xs mb-1">
-          <span className="font-semibold text-neutral-700">{label}</span>
-          <span className="text-neutral-500">{pct}% ({count})</span>
-        </div>
-        <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-          <div className="h-full bg-neutral-900 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── GA4 Quick Link Card ────────────────────────────────────────────────────
-const GA4Card: React.FC<{ title: string; desc: string; href: string; icon: React.ReactNode }> = ({
-  title, desc, href, icon,
-}) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-xl hover:border-neutral-900 hover:bg-white transition-all group"
-  >
-    <div className="p-2 bg-white border border-neutral-200 rounded-lg text-neutral-700 group-hover:text-neutral-900 shrink-0">
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="text-xs font-bold text-neutral-900">{title}</div>
-      <div className="text-[11px] text-neutral-500">{desc}</div>
-    </div>
-    <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-900 shrink-0" />
-  </a>
-);
-
-// ─── Main Admin Page ─────────────────────────────────────────────────────────
-export default function AdminDashboardPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'analytics' | 'settings' | 'ads'>('analytics');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSaved, setPasswordSaved] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState(adminPassword);
-  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [savedMessage, setSavedMessage] = useState(false);
-
-  const [adsState, setAdsState] = useState({
-    headerAdActive: true, sidebarAdActive: true,
-    inContentAdActive: true, belowResultsAdActive: true, footerAdActive: true,
-  });
-  const [adScripts, setAdScripts] = useState({
-    headerAdScript: '', sidebarAdScript: '', inContentAdScript: '',
-    belowResultsAdScript: '', footerAdScript: '',
-  });
-  const [siteName, setSiteName] = useState('Numvax');
-  const [tagline, setTagline] = useState('Fast, accurate and easy-to-use calculators for everyday life, work and study.');
-  const [contactEmail, setContactEmail] = useState('contact@numvax.com');
-
+  // 1. Check Auth Session
   useEffect(() => {
-    if (isAuthenticated) {
-      trackPageView();
-      setAnalytics(getAnalyticsSummary());
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    fetch('/api/admin/settings').then(r => r.json()).then(data => {
-      if (data.success && data.settings) {
-        setAdsState({
-          headerAdActive: data.settings.headerAdActive,
-          sidebarAdActive: data.settings.sidebarAdActive,
-          inContentAdActive: data.settings.inContentAdActive,
-          belowResultsAdActive: data.settings.belowResultsAdActive,
-          footerAdActive: data.settings.footerAdActive,
-        });
-        if (data.settings.siteName) setSiteName(data.settings.siteName);
-        if (data.settings.tagline) setTagline(data.settings.tagline);
-        if (data.settings.contactEmail) setContactEmail(data.settings.contactEmail);
-      }
-    }).catch(() => {});
+    fetch('/api/admin/auth/me')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          setAdminUser(data.admin);
+          loadDashboardData();
+        } else {
+          setIsAuthenticated(false);
+        }
+      })
+      .catch(() => setIsAuthenticated(false));
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (adminPassword === currentPassword || adminPassword.length >= 4) {
-      setIsAuthenticated(true);
+  const loadDashboardData = async () => {
+    setIsLoadingStats(true);
+    try {
+      const res = await fetch('/api/admin/stats');
+      const data = await res.json();
+      if (data.success) {
+        setStats(data.stats);
+        setSeoIssues(data.seoIssues || []);
+        setRecentUpdates(data.recentUpdates || []);
+        setRecentHistory(data.recentHistory || []);
+      }
+    } catch (err) {
+      console.error('Error fetching admin stats:', err);
+    } finally {
+      setIsLoadingStats(false);
     }
   };
 
-  const handleChangePassword = () => {
-    setPasswordError('');
-    if (newPassword.length < 4) { setPasswordError('Password must be at least 4 characters.'); return; }
-    if (newPassword !== confirmNewPassword) { setPasswordError('Passwords do not match.'); return; }
-    setCurrentPassword(newPassword);
-    setNewPassword('');
-    setConfirmNewPassword('');
-    setPasswordSaved(true);
-    setTimeout(() => setPasswordSaved(false), 3000);
-  };
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
 
-  const handleSave = async () => {
-    setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...adsState, ...adScripts, siteName, tagline, contactEmail }),
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
       const data = await res.json();
-      if (data.success) { setSavedMessage(true); setTimeout(() => setSavedMessage(false), 3000); }
-    } catch {} finally { setIsLoading(false); }
+
+      if (data.success) {
+        setIsAuthenticated(true);
+        setAdminUser(data.admin);
+        loadDashboardData();
+      } else {
+        setLoginError(data.error || 'Invalid credentials');
+      }
+    } catch {
+      setLoginError('An error occurred during login. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const refreshAnalytics = () => setAnalytics(getAnalyticsSummary());
-
-  // ── Login Screen ─────────────────────────────────────────────────────────
-  if (!isAuthenticated) {
+  // ─── Loading State ─────────────────────────────────────────────────────────
+  if (isAuthenticated === null) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 flex flex-col gap-6">
-        <div className="text-center flex flex-col items-center gap-3">
-          <div className="p-4 bg-neutral-900 text-white rounded-2xl">
-            <Lock className="w-7 h-7" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-neutral-900">Numvax</h1>
-            <p className="text-xs text-neutral-500 mt-1">Admin Portal — Restricted Access</p>
-          </div>
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-neutral-300 border-t-neutral-900 rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-neutral-500">Loading Numvax Admin...</span>
         </div>
-        <Card>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <Input label="Password" type="password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} required placeholder="Enter admin password" />
-            <Button type="submit" variant="primary" size="lg" className="w-full mt-2">Sign In to Admin Portal</Button>
-          </form>
-        </Card>
       </div>
     );
   }
 
-  const totalDevices = Object.values(analytics?.deviceBreakdown || {}).reduce((a, b) => a + b, 0);
-  const dailyViewsData = (analytics?.dailyViews || []).map(d => d.views);
-  const dailySessionsData = (analytics?.dailyViews || []).map(d => d.sessions);
+  // ─── Login Screen ──────────────────────────────────────────────────────────
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4 antialiased">
+        <div className="max-w-md w-full flex flex-col gap-6">
+          <div className="text-center flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-md">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h1 className="text-2xl font-black text-neutral-900 tracking-tight">Numvax Admin Panel</h1>
+            <p className="text-xs text-neutral-500">Sign in to manage SEO, content, tools, and site settings.</p>
+          </div>
 
-  // ── Dashboard ────────────────────────────────────────────────────────────
+          <div className="bg-white border border-neutral-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              {loginError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                  {loginError}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-neutral-700">Admin Email</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="admin@numvax.com"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-neutral-700">Password</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full py-2.5 px-4 text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 mt-2 cursor-pointer"
+              >
+                {isLoggingIn ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
+                Sign In to Admin Portal
+              </button>
+            </form>
+          </div>
+
+          <div className="text-center text-[11px] text-neutral-400">
+            Protected by PBKDF2 cryptography & secure session tokens.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Dashboard Screen ──────────────────────────────────────────────────────
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-neutral-900 flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6" /> Admin Control Panel
-          </h1>
-          <p className="text-xs text-neutral-500 mt-0.5">Analytics, ad management, and site settings for Numvax.</p>
+    <AdminLayout>
+      <div className="flex flex-col gap-8">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 pb-5">
+          <div>
+            <h1 className="text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-2">
+              Dashboard Overview
+            </h1>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Welcome back, <span className="font-bold text-neutral-800">{adminUser?.name || 'Admin'}</span>. Here is the health and SEO summary for Numvax.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadDashboardData}
+              disabled={isLoadingStats}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingStats ? 'animate-spin' : ''}`} /> Refresh
+            </button>
+            <Link
+              href="/admin/tools/new"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition-colors shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Tool
+            </Link>
+          </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setIsAuthenticated(false)}>Sign Out</Button>
-      </div>
 
-      {/* Tab Nav */}
-      <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-2xl w-fit">
-        {([
-          { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-3.5 h-3.5" /> },
-          { id: 'settings', label: 'Site Settings', icon: <Settings className="w-3.5 h-3.5" /> },
-          { id: 'ads', label: 'Ad Manager', icon: <Code2 className="w-3.5 h-3.5" /> },
-        ] as const).map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              activeTab === tab.id ? 'bg-neutral-900 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
-            }`}
-          >
-            {tab.icon} {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── ANALYTICS TAB ─────────────────────────────────────────────────── */}
-      {activeTab === 'analytics' && (
-        <div className="flex flex-col gap-6">
-          {/* Section header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Site Analytics
-                <span className="text-[11px] font-normal text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">Last 30 days (local data)</span>
-              </h2>
+        {/* 1. Quick Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-5 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="p-2 bg-neutral-100 text-neutral-800 rounded-xl">
+                <Wrench className="w-4 h-4" />
+              </div>
+              <span className="text-[11px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                {stats?.publishedTools ?? '0'} Published
+              </span>
             </div>
-            <Button variant="outline" size="sm" onClick={refreshAnalytics}>
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
-            </Button>
+            <div>
+              <div className="text-2xl font-black text-neutral-900">{stats?.totalTools ?? '0'}</div>
+              <div className="text-xs font-semibold text-neutral-500 mt-0.5">Total Tools & Calculators</div>
+            </div>
           </div>
 
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard label="Total Page Views" value={analytics?.totalPageViews.toLocaleString() ?? '0'}
-              sub="Last 30 days" icon={<TrendingUp className="w-4 h-4" />} trend={dailyViewsData} />
-            <MetricCard label="Unique Sessions" value={analytics?.totalSessions.toLocaleString() ?? '0'}
-              sub="Individual visits" icon={<Users className="w-4 h-4" />} trend={dailySessionsData} />
-            <MetricCard label="Tool Interactions" value={analytics?.totalToolStarts.toLocaleString() ?? '0'}
-              sub="Tools started" icon={<MousePointerClick className="w-4 h-4" />} />
-            <MetricCard
-              label="Completion Rate"
-              value={`${analytics?.completionRate ?? 0}%`}
-              sub={`${analytics?.totalToolCompletions ?? 0} tasks finished`}
-              icon={<Target className="w-4 h-4" />}
-              accent={analytics && analytics.completionRate >= 60 ? '#16a34a' : '#d97706'}
-            />
+          <div className="p-5 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="p-2 bg-neutral-100 text-neutral-800 rounded-xl">
+                <FileText className="w-4 h-4" />
+              </div>
+              <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                {stats?.publishedPages ?? '0'} Live
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-neutral-900">{stats?.totalPages ?? '0'}</div>
+              <div className="text-xs font-semibold text-neutral-500 mt-0.5">Static Content Pages</div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Most Used Tools */}
-            <div className="lg:col-span-2">
-              <Card className="flex flex-col gap-1 p-5">
-                <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 mb-3">
-                  <Layers className="w-4 h-4" /> Most Used Tools
-                  <span className="text-[11px] font-normal text-neutral-400">— Completion rate</span>
-                </h3>
-                {analytics?.topTools.length ? (
-                  analytics.topTools.map((t, i) => (
-                    <ToolRow key={t.slug} rank={i + 1} {...t} />
-                  ))
-                ) : (
-                  <div className="py-8 text-center text-xs text-neutral-400">
-                    No tool usage data yet. Data builds up as visitors use your tools.
+          <div className="p-5 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="p-2 bg-neutral-100 text-neutral-800 rounded-xl">
+                <FolderTree className="w-4 h-4" />
+              </div>
+              <span className="text-[11px] font-bold text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
+                Organized
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-neutral-900">{stats?.totalCategories ?? '0'}</div>
+              <div className="text-xs font-semibold text-neutral-500 mt-0.5">Tool Categories</div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white border border-neutral-200 rounded-2xl flex flex-col gap-2 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="p-2 bg-amber-50 text-amber-800 rounded-xl">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+              </div>
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                (stats?.seoIssueCount || 0) > 0 ? 'text-amber-700 bg-amber-50' : 'text-green-700 bg-green-50'
+              }`}>
+                {(stats?.seoIssueCount || 0) > 0 ? 'Action Needed' : 'Healthy'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-neutral-900">{stats?.seoIssueCount ?? '0'}</div>
+              <div className="text-xs font-semibold text-neutral-500 mt-0.5">SEO Recommendations</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Quick Access Shortcuts */}
+        <div className="flex flex-col gap-3">
+          <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wider text-[11px]">Quick Management</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { href: '/admin/tools', label: 'Manage Tools', sub: `${stats?.totalTools || 0} tools`, icon: Wrench },
+              { href: '/admin/pages', label: 'Static Pages', sub: `${stats?.totalPages || 0} pages`, icon: FileText },
+              { href: '/admin/categories', label: 'Categories', sub: `${stats?.totalCategories || 0} groups`, icon: FolderTree },
+              { href: '/admin/seo/bulk', label: 'Bulk SEO', sub: 'Fast spreadsheet', icon: Layers },
+              { href: '/admin/seo/redirects', label: '301 Redirects', sub: 'URL router', icon: ArrowUpRight },
+              { href: '/admin/settings/seo', label: 'Global SEO', sub: 'Templates & meta', icon: Globe },
+            ].map((card, idx) => {
+              const Icon = card.icon;
+              return (
+                <Link
+                  key={idx}
+                  href={card.href}
+                  className="p-4 bg-neutral-50 border border-neutral-200 hover:border-neutral-900 hover:bg-white rounded-2xl transition-all group flex flex-col gap-2"
+                >
+                  <div className="p-2 bg-white group-hover:bg-neutral-900 group-hover:text-white border border-neutral-200 rounded-xl text-neutral-800 w-fit transition-colors">
+                    <Icon className="w-4 h-4" />
                   </div>
-                )}
-              </Card>
+                  <div>
+                    <div className="text-xs font-bold text-neutral-900 group-hover:text-neutral-900">{card.label}</div>
+                    <div className="text-[11px] text-neutral-400">{card.sub}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. Main Split Section: SEO Issues & Recently Updated */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* SEO Issues Card */}
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 flex flex-col gap-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-neutral-900">Priority SEO Recommendations</h3>
+              </div>
+              <Link href="/admin/seo" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">
+                View All →
+              </Link>
             </div>
 
-            {/* Device Breakdown */}
-            <div className="flex flex-col gap-4">
-              <Card className="p-5 flex flex-col gap-4">
-                <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-                  <Monitor className="w-4 h-4" /> Device Breakdown
-                </h3>
-                <DeviceBar label="Desktop" count={analytics?.deviceBreakdown['desktop'] ?? 0} total={totalDevices} icon={<Monitor className="w-4 h-4" />} />
-                <DeviceBar label="Mobile" count={analytics?.deviceBreakdown['mobile'] ?? 0} total={totalDevices} icon={<Smartphone className="w-4 h-4" />} />
-                <DeviceBar label="Tablet" count={analytics?.deviceBreakdown['tablet'] ?? 0} total={totalDevices} icon={<Tablet className="w-4 h-4" />} />
-              </Card>
-
-              {/* Daily Views mini-table */}
-              <Card className="p-5 flex flex-col gap-2">
-                <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 mb-1">
-                  <BarChart3 className="w-4 h-4" /> Daily Views (last 7 days)
-                </h3>
-                {(analytics?.dailyViews.slice(-7) || []).length ? (
-                  analytics!.dailyViews.slice(-7).reverse().map(d => (
-                    <div key={d.date} className="flex justify-between text-[11px]">
-                      <span className="text-neutral-500">{new Date(d.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                      <span className="font-bold text-neutral-900">{d.views} views</span>
+            {seoIssues.length === 0 ? (
+              <div className="py-8 text-center flex flex-col items-center gap-2">
+                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <span className="text-xs font-bold text-neutral-800">All SEO Checks Passed!</span>
+                <span className="text-[11px] text-neutral-400">All tools and pages meet title, description, and keyword standards.</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {seoIssues.slice(0, 5).map((issue, idx) => (
+                  <Link
+                    key={idx}
+                    href={issue.type === 'tool' ? `/admin/tools/${issue.id}` : `/admin/pages/${issue.id}`}
+                    className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl flex items-center justify-between transition-colors group"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="text-xs font-bold text-neutral-900 truncate group-hover:underline">
+                        {issue.title}
+                      </div>
+                      <div className="text-[11px] text-amber-700 mt-0.5">{issue.issue}</div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-neutral-400">No data yet — data starts accumulating immediately.</p>
-                )}
-              </Card>
-            </div>
+                    <span className="text-[11px] font-bold text-neutral-400 group-hover:text-neutral-900 shrink-0">
+                      Fix →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Google Analytics 4 Quick Links */}
-          <Card className="p-5 flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-              <Globe className="w-4 h-4" /> Google Analytics 4 — Full Reports
-              <span className="text-[11px] font-normal text-neutral-400">Open GA4 for traffic source, country, search pages, returning users</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <GA4Card title="Traffic Sources" desc="See where visitors come from" href="https://analytics.google.com/analytics/web/#/report/trafficsources-overview" icon={<TrendingUp className="w-4 h-4" />} />
-              <GA4Card title="Geographic / Countries" desc="Top countries sending traffic" href="https://analytics.google.com/analytics/web/#/report/visitors-geo" icon={<Globe className="w-4 h-4" />} />
-              <GA4Card title="Search Landing Pages" desc="Which pages get Google traffic" href="https://analytics.google.com/analytics/web/#/report/content-landing-pages" icon={<Search className="w-4 h-4" />} />
-              <GA4Card title="Device & Technology" desc="Mobile vs desktop breakdown" href="https://analytics.google.com/analytics/web/#/report/visitors-mobile-overview" icon={<Smartphone className="w-4 h-4" />} />
-              <GA4Card title="Returning Users" desc="New vs returning visitor ratio" href="https://analytics.google.com/analytics/web/#/report/visitors-new-vs-returning" icon={<Users className="w-4 h-4" />} />
-              <GA4Card title="Exit Pages" desc="Where users leave your site" href="https://analytics.google.com/analytics/web/#/report/content-exit-pages" icon={<ArrowUpRight className="w-4 h-4" />} />
+          {/* Recently Updated Items */}
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 flex flex-col gap-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-neutral-500" />
+                <h3 className="text-sm font-bold text-neutral-900">Recently Updated Items</h3>
+              </div>
+              <Link href="/admin/tools" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">
+                All Tools →
+              </Link>
             </div>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-              <strong>Setup Required:</strong> To see full GA4 traffic data, create a free Google Analytics 4 property at <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="underline">analytics.google.com</a>, get your Measurement ID (G-XXXXXXXXXX), and share it with us to add it to your site.
-            </div>
-          </Card>
 
-          {/* AdSense Earnings Quick Link */}
-          <Card className="p-5 flex flex-col gap-3">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-              <Zap className="w-4 h-4" /> AdSense Earnings Dashboard
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <GA4Card title="AdSense Earnings" desc="Revenue, RPM, page views" href="https://adsense.google.com/adsense/app#/main/home" icon={<TrendingUp className="w-4 h-4" />} />
-              <GA4Card title="Ad Performance by Page" desc="Which pages earn most" href="https://adsense.google.com/adsense/app#/main/reports/content" icon={<LayoutDashboard className="w-4 h-4" />} />
-            </div>
-          </Card>
+            {recentUpdates.length === 0 ? (
+              <div className="py-8 text-center text-xs text-neutral-400">No recently modified items.</div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {recentUpdates.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={`/admin/tools/${item.id}`}
+                    className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl flex items-center justify-between transition-colors group"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-neutral-900 group-hover:underline">{item.name}</div>
+                      <div className="text-[11px] text-neutral-400 mt-0.5">
+                        /{item.slug} • {item.category}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-semibold text-neutral-400">
+                      {new Date(item.updatedAt).toLocaleDateString()}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* ── SETTINGS TAB ──────────────────────────────────────────────────── */}
-      {activeTab === 'settings' && (
-        <div className="flex flex-col gap-6">
-          {/* Site Branding */}
-          <Card className="flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-              <h2 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                <Edit3 className="w-4 h-4" /> Site Settings & Branding
-              </h2>
-              <Button variant="primary" size="sm" onClick={handleSave} disabled={isLoading}>
-                {isLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null} Save Settings
-              </Button>
-            </div>
-            {savedMessage && (
-              <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs font-semibold rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" /> Settings saved successfully!
+        {/* 4. Recent Audit History */}
+        {recentHistory.length > 0 && (
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 flex flex-col gap-3 shadow-xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-neutral-500" />
+                <h3 className="text-sm font-bold text-neutral-900">Recent Activity & Revision History</h3>
               </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Site Name" value={siteName} onChange={e => setSiteName(e.target.value)} />
-              <Input label="Support Contact Email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+              <Link href="/admin/history" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">
+                Full Log →
+              </Link>
             </div>
-            <Input label="Homepage Tagline" value={tagline} onChange={e => setTagline(e.target.value)} />
-          </Card>
 
-          {/* Change Admin Password */}
-          <Card className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-neutral-200 pb-3">
-              <Lock className="w-4 h-4 text-neutral-700" />
-              <h2 className="text-base font-bold text-neutral-900">Change Admin Password</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {recentHistory.map((h, idx) => (
+                <div key={idx} className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl flex flex-col gap-1 text-xs">
+                  <div className="flex items-center justify-between text-[10px] text-neutral-400">
+                    <span className="font-bold uppercase tracking-wider text-neutral-600">{h.action}</span>
+                    <span>{new Date(h.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="font-bold text-neutral-900 truncate">{h.entityTitle}</div>
+                  <div className="text-[11px] text-neutral-500">by {h.changedBy}</div>
+                </div>
+              ))}
             </div>
-            {passwordSaved && (
-              <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs font-semibold rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" /> Password updated successfully! Use your new password next time you log in.
-              </div>
-            )}
-            {passwordError && (
-              <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-lg">
-                {passwordError}
-              </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="New Password"
-                type="password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                placeholder="Min. 4 characters"
-              />
-              <Input
-                label="Confirm New Password"
-                type="password"
-                value={confirmNewPassword}
-                onChange={e => setConfirmNewPassword(e.target.value)}
-                placeholder="Re-enter new password"
-              />
-            </div>
-            <div>
-              <Button variant="primary" size="sm" onClick={handleChangePassword}>
-                <Lock className="w-3.5 h-3.5" /> Update Password
-              </Button>
-            </div>
-            <p className="text-[11px] text-neutral-400">⚠ Password is stored in browser session. It resets if you clear browser data. For permanent passwords, connect a backend.</p>
-          </Card>
-        </div>
-      )}
-
-      {/* ── AD MANAGER TAB ────────────────────────────────────────────────── */}
-      {activeTab === 'ads' && (
-        <Card className="flex flex-col gap-4">
-          <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-            <h2 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-              <Code2 className="w-4 h-4" /> Ad Script Manager
-            </h2>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={isLoading}>
-              {isLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null} Save Ad Code
-            </Button>
           </div>
-          {savedMessage && (
-            <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs font-semibold rounded-lg flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Ad code updated!
-            </div>
-          )}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800">
-            <strong>Active AdSense:</strong> Publisher ID <code className="font-mono">ca-pub-7170382598292424</code> · Ad Slot <code className="font-mono">5204458278</code> — live on all 175 pages.
-          </div>
-          {(['header', 'belowResults', 'inContent'] as const).map(pos => (
-            <div key={pos} className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-neutral-600 capitalize">
-                {pos.replace(/([A-Z])/g, ' $1')} Ad Code (HTML / Script)
-              </label>
-              <textarea
-                rows={2}
-                placeholder={`<ins class="adsbygoogle" data-ad-slot="..."></ins>`}
-                value={adScripts[`${pos}AdScript` as keyof typeof adScripts]}
-                onChange={e => setAdScripts({ ...adScripts, [`${pos}AdScript`]: e.target.value })}
-                className="w-full px-3 py-2 text-xs font-mono bg-white border border-neutral-200 rounded-lg text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400"
-              />
-            </div>
-          ))}
-        </Card>
-      )}
-    </div>
+        )}
+      </div>
+    </AdminLayout>
   );
 }

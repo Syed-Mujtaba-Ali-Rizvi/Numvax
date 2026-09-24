@@ -4,17 +4,37 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { getPageContent } from '@/lib/contentService';
 import { ShieldCheck, Zap, Layers, Lock, Cpu, Globe, CheckCircle2, Award, Users } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'About Numvax – Free Online Tools & Utility Platform',
-  description: 'Learn about Numvax: a free, privacy-first online utility platform providing client-side batch image compression, PDF editing, QR code generation, unit converters, and calculators.',
-  alternates: {
-    canonical: 'https://numvax.com/about',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageContent('about');
+  const title = page?.metaTitle || 'About Numvax – Free Online Tools & Utility Platform';
+  const description = page?.metaDescription || 'Learn about Numvax: a free, privacy-first online utility platform providing client-side batch image compression, PDF editing, QR code generation, unit converters, and calculators.';
 
-export default function AboutPage() {
+  return {
+    title,
+    description,
+    robots: {
+      index: !page?.noIndex,
+      follow: !page?.noFollow,
+    },
+    alternates: {
+      canonical: page?.canonicalUrl || 'https://numvax.com/about',
+    },
+    openGraph: {
+      title,
+      description,
+      url: page?.canonicalUrl || 'https://numvax.com/about',
+      siteName: 'Numvax',
+    },
+  };
+}
+
+export default async function AboutPage() {
+  const page = await getPageContent('about');
+  const h1Title = page?.h1Title || 'About Numvax';
+
   const breadcrumbs = [
     { name: 'Home', url: 'https://numvax.com' },
     { name: 'About', url: 'https://numvax.com/about' },
@@ -30,7 +50,7 @@ export default function AboutPage() {
         <Image src="/logo.png" alt="Numvax Logo" width={48} height={48} className="rounded-xl object-contain bg-black shrink-0 shadow-2xs" priority />
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
-            About Numvax
+            {h1Title}
           </h1>
           <p className="text-xs sm:text-sm text-neutral-500 font-medium">
             Fast, client-side online tools &amp; utility platform built for high privacy and speed
